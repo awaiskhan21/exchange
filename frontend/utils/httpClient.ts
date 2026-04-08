@@ -1,4 +1,4 @@
-import { Depth, Klines, Trade } from "./types";
+import { Depth, Klines, Ticker, Trade } from "./types";
 
 const BASE_URL = "http://localhost:3000/api/v1";
 
@@ -26,12 +26,26 @@ export async function getKlines(
     `${BASE_URL}/klines?symbol=${market}&interval=${interval}&startTime=${startTime}&endTime=${endTime}`,
   );
   const data: Klines[] = await res.json();
-  console.log(
-    "new kline data: ",
-    data
-      // .slice(1, 5)
-      .sort((x, y) => new Date(x.end).getTime() - new Date(y.end).getTime()),
-  );
+  data.sort((x, y) => new Date(x.end).getTime() - new Date(y.end).getTime());
 
   return data;
+}
+
+export async function getTickers(): Promise<Ticker[]> {
+  console.log("get Tickers called");
+  const res = await fetch(`${BASE_URL}/tickers`);
+  const data = res.json();
+  return data;
+}
+
+export async function getTicker(market: string): Promise<Ticker> {
+  console.log("market", market);
+  const tickers: Ticker[] = await getTickers();
+  const ticker = tickers.find((t) => t.symbol === market);
+  console.log("ticker: ", ticker);
+  console.log("ticker");
+  if (!ticker) {
+    throw new Error(`No ticker found for ${market}`);
+  }
+  return ticker;
 }
