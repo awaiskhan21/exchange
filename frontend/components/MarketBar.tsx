@@ -1,13 +1,41 @@
 "use client";
 import { getTicker } from "@/utils/httpClient";
+import { SignalingManager } from "@/utils/SignalingManager";
 import { Ticker } from "@/utils/types";
 import { useEffect, useState } from "react";
 
 export const MarketBar = ({ market }: { market: string }) => {
   const [tickerValue, setTickerValue] = useState<Ticker | null>(null);
+  // const ws = SignalingManager.getInstance().sendMessage({"method":"UNSUBSCRIBE","params":["ticker.SOL_USDC_PERP"]});
+  
 
   useEffect(() => {
     getTicker(market).then(setTickerValue);
+    const manager = SignalingManager.getInstance()
+    console.log("Ticker value from market bar component: ", tickerValue)
+    manager.registerCallback("ticker",(data : Partial<Ticker>)=>{
+
+      return setTickerValue(prevTicker => ({
+        firstPrice: data.firstPrice ?? prevTicker?.firstPrice ?? '',
+        high: data.high ?? prevTicker?.high ??'',
+        lastPrice: (Number(data.lastPrice)+ Math.random()*10).toFixed(2),
+        low: data.low ?? prevTicker?.low ??'',
+        priceChange: data.priceChange ?? prevTicker?.priceChange ??'',
+        priceChangePercent: data.priceChangePercent ?? prevTicker?.priceChangePercent ??'',
+        quoteVolume: data.quoteVolume ?? prevTicker?.quoteVolume ??'',
+        symbol: data.symbol ?? prevTicker?.symbol ??'',
+        trades: data.trades ?? prevTicker?.trades ??'',
+        volume: data.volume ?? prevTicker?.volume ??'',
+      }))
+    },`ticker-${market}`)
+
+    manager.sendMessage({"method":"SUBSCRIBE","params":[`ticker.${market}`]})
+
+    return () =>{
+      manager.deRegisterCallback("ticker", `ticker-${market}`)
+      manager.sendMessage({"method":"UNSUBSCRIBE","params":[`ticker.${market}`]})
+    }
+
   }, [market]);
 
   return (

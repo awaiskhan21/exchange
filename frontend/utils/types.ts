@@ -39,3 +39,7 @@ export interface Ticker {
   trades: string;
   volume: string;
 }
+export interface CallbackMap {
+  ticker: (data: Partial<Ticker>) => void;
+  depth: (data: any) => void; // you can refine later
+}
