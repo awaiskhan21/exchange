@@ -12,9 +12,10 @@ export class SignalingManager {
   private initialized: boolean = false;
   private id: number;
 
-  //   {"method":"UNSUBSCRIBE","params":["ticker.SOL_USDC_PERP"],"id":16}
-  //   {"method":"UNSUBSCRIBE","params":["depth.200ms.SOL_USDC_PERP"],"id":14}
-  //   {"method":"UNSUBSCRIBE","params":["trade.SOL_USDC_PERP"],"id":13}
+  // {"method":"UNSUBSCRIBE","params":["ticker.SOL_USDC_PERP"],"id":16}
+  // {"method":"UNSUBSCRIBE","params":["depth.200ms.SOL_USDC_PERP"],"id":14}
+  // {"method":"UNSUBSCRIBE","params":["trade.SOL_USDC_PERP"],"id":13}
+  // {"method":"UNSUBSCRIBE","params":["kline.1m.SOL_USDC"],"id":15}
   private constructor() {
     console.log("constructor is called");
     this.ws = new WebSocket(BASE_URL);
@@ -34,6 +35,7 @@ export class SignalingManager {
   init() {
     console.log("SignalingManager>init called");
 
+    //when connection open set initialized to true and send all the buffer msgs
     this.ws.onopen = () => {
       console.log("SignalingManager>init>onopen called");
       this.initialized = true;
@@ -85,15 +87,25 @@ export class SignalingManager {
     this.ws.send(JSON.stringify(messageToSend));
   }
 
+  // Register a callback function for a specific websocket event type.
+  // Whenever a message is received from the websocket, we check its type
+  // (for example: "ticker" or "depth") and invoke all callbacks
+  // registered for that type by passing the parsed message data.
+  //
+  // Example:
+  // if message type = "ticker"
+  // -> callback(message.data)
+  //
+  // Stored structure example:
+  // this.callbacks = {
+  //   ticker: [
+  //     { callback: fn1, id: "123" },
+  //     { callback: fn2, id: "456" }
+  //   ]
+  // }
   async registerCallback(type: keyof CallbackMap, callback: any, id: string) {
     this.callbacks[type] = this.callbacks[type] || [];
     this.callbacks[type]!.push({ callback, id });
-    // eg:   this.callback = {
-    //     ticker: [
-    //         { callback: fn1, id: "123" },
-    //         { callback: fn2, id: "456" }
-    //     ]
-    // }
   }
 
   async deRegisterCallback(type: keyof CallbackMap, id: string) {
