@@ -1,4 +1,4 @@
-import { Ticker, CallbackMap } from "./types";
+import { Ticker, CallbackMap, Depth } from "./types";
 
 const BASE_URL = "wss://ws.backpack.exchange/";
 
@@ -16,15 +16,15 @@ export class SignalingManager {
   //   {"method":"UNSUBSCRIBE","params":["depth.200ms.SOL_USDC_PERP"],"id":14}
   //   {"method":"UNSUBSCRIBE","params":["trade.SOL_USDC_PERP"],"id":13}
   private constructor() {
-    console.log("constructor is called")
+    console.log("constructor is called");
     this.ws = new WebSocket(BASE_URL);
     this.bufferMessages = [];
     this.id = 1;
-    this.init()
+    this.init();
   }
 
   public static getInstance() {
-    console.log("SignalingManager>getInstance called")
+    console.log("SignalingManager>getInstance called");
     if (!this.instance) {
       this.instance = new SignalingManager();
     }
@@ -32,10 +32,10 @@ export class SignalingManager {
   }
 
   init() {
-    console.log("SignalingManager>init called")
+    console.log("SignalingManager>init called");
 
     this.ws.onopen = () => {
-      console.log("SignalingManager>init>onopen called")
+      console.log("SignalingManager>init>onopen called");
       this.initialized = true;
       this.bufferMessages.forEach((message) => {
         this.ws.send(JSON.stringify(message));
@@ -45,7 +45,7 @@ export class SignalingManager {
 
     this.ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      console.log("SignalingManager>init>onopen called")
+      // console.log("SignalingManager>init>onopen called");
       const type = message.data.e as keyof CallbackMap;
 
       if (this.callbacks[type]) {
@@ -61,9 +61,11 @@ export class SignalingManager {
               symbol: message.data.s,
             };
             callbackObj.callback(newTicker);
-          } 
-          // else if (type === "depth") {
-          // }
+          } else if (type === "depth") {
+            const updatedBids = message.data.b;
+            const updatedAsks = message.data.a;
+            callbackObj.callback({ bids: updatedBids, asks: updatedAsks });
+          }
         });
       }
     };
@@ -75,7 +77,10 @@ export class SignalingManager {
       this.bufferMessages.push(messageToSend);
       return;
     }
-    console.log("SignalingManager>sendMessage called:message=>, ", messageToSend)
+    // console.log(
+    //   "SignalingManager>sendMessage called:message=>, ",
+    //   messageToSend,
+    // );
 
     this.ws.send(JSON.stringify(messageToSend));
   }

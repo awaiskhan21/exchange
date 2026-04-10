@@ -41,5 +41,5 @@ export interface Ticker {
 }
 export interface CallbackMap {
   ticker: (data: Partial<Ticker>) => void;
-  depth: (data: any) => void; // you can refine later
+  depth: (data: Partial<Depth>) => void; // you can refine later
 }

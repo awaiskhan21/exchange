@@ -16,7 +16,7 @@ function Asks({ asks }: { asks: [string, string][] }) {
   return (
     <div className="max-h-64 overflow-auto">
       {asksWithTotal.map((ask) => (
-        <div className="relative w-full text-xs">
+        <div className="relative w-full text-xs" key={ask[0]}>
           <div
             className="absolute right-0 top-0 h-full bg-red-500/16"
             style={{ width: `${(ask[2] / maxSum) * 100}%` }}

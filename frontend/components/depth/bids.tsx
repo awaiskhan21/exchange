@@ -1,7 +1,6 @@
 function Bids({ bids }: { bids: [string, string][] }) {
   let currentTotal = 0;
-  const releventBids = bids.slice(0, 15);
-  console.log("relevent bids: ", releventBids);
+  const releventBids = bids;
   const bidsWithTotal: [string, string, number][] = [];
   for (let i = releventBids.length - 1; i >= 0; i--) {
     currentTotal = Number(
@@ -14,11 +13,12 @@ function Bids({ bids }: { bids: [string, string][] }) {
   //   900    0.5    1.5
   //   800    1      2.5
   const maxSum = currentTotal;
-  console.log("bids with total: ", bidsWithTotal);
+  bidsWithTotal.reverse();
+  // console.log("bids: ", bidsWithTotal);
   return (
     <div className="max-h-64 overflow-auto ">
       {bidsWithTotal.map((bid) => (
-        <div className="relative w-full text-xs">
+        <div className="relative w-full text-xs" key={bid[0]}>
           {/* bg-[#43ff64d9]  darker shade of green */}
           <div
             className="absolute top-0 right-0 h-full  bg-[#00c27829] "
